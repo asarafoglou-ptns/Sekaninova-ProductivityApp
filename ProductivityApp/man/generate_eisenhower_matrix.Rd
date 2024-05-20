@@ -4,18 +4,19 @@
 \alias{generate_eisenhower_matrix}
 \title{Generate an Eisenhower Matrix}
 \usage{
-generate_eisenhower_matrix(filename = "tasks.csv")
+generate_eisenhower_matrix(df)
 }
 \arguments{
-\item{filename}{character, name of the task csv file, default is "tasks.csv"}
+\item{df}{name of the task data frame}
 }
 \value{
 the Eisenhower matrix
 }
 \description{
-Creates an Eisenhower matrix based on a file with tasks.
+Creates an Eisenhower matrix based on a data frame with tasks.
 }
 \examples{
-# Generate an Eisenhower matrix, assuming you have "tasks.csv" file in your working directory
-generate_eisenhower_matrix()
+# Generate an Eisenhower matrix based on an example data frame
+example_df = data.frame(Task = c("Meeting preparation", "Programming", "Watch lecture recording"),Duration = c(30, 60, 75),Importance = c(4, 3, 3),Urgency = c(4, 2, 3),Enjoyability = c(1, 3, 2),stringsAsFactors = FALSE)
+generate_eisenhower_matrix(df = example_df)
 }

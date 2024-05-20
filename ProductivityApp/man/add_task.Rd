@@ -4,9 +4,11 @@
 \alias{add_task}
 \title{Add Task}
 \usage{
-add_task(task, duration, importance, urgency, enjoyability)
+add_task(df, task, duration, importance, urgency, enjoyability, shiny = TRUE)
 }
 \arguments{
+\item{df}{name of the task data frame that will be updated}
+
 \item{task}{character, name of the task you want to add}
 
 \item{duration}{integer, duration of the task in minutes}
@@ -16,14 +18,17 @@ add_task(task, duration, importance, urgency, enjoyability)
 \item{urgency}{integer(1-4), how urgent the task is}
 
 \item{enjoyability}{integer(1-3), how enjoyable the task is}
+
+\item{shiny}{Boolean, whether this function will be used with shiny's reactive dataframe, default is TRUE}
 }
 \value{
-the tasks.csv file is updated
+the updated task data frame
 }
 \description{
-Adds a new task with its variables to the tasks.csv file.
+Adds a new task with its variables to the task data frame with columns Task, Duration, Importance, Urgency, and Enjoyability.
 }
 \examples{
-# Add a task to your task file
-add_task(task = "Programming", duration = 180, importance = 4, urgency = 3, enjoyability = 2)
+# Add a task to an example data frame
+example_df = data.frame(Task = c("Meeting preparation", "Programming", "Watch lecture recording"),Duration = c(30, 60, 75),Importance = c(4, 3, 3),Urgency = c(4, 2, 3),Enjoyability = c(1, 3, 2),stringsAsFactors = FALSE)
+add_task(df = example_df, task = "Programming", duration = 180, importance = 4, urgency = 3, enjoyability = 2, shiny = FALSE)
 }
