@@ -1,0 +1,12 @@
+Package: ProductivityApp
+Title: Generate an Informed To-Do List Given a Set of Tasks
+Version: 0.0.0.9000
+Authors@R: 
+    person("Elena", "Sekaninová", , "elena.sekaninova@gmail.com", role = c("aut", "cre"))
+Description: ProductivityApp allows you to generate a to-do list based on the characteristics of your tasks and your to-do list preferences. You can also use it to visualize your tasks with the so-called Eisenhower matrix that evaluates tasks based on importance and urgency. 
+License: CC BY 4.0
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Imports:
+  ggplot2
