@@ -1,6 +1,13 @@
 #' @title Create an Empty Task Data Frame
 #' @description Creates an empty task data frame. The data frame has 5 columns named Task, Duration, Importance, Urgency, and Enjoyability. It does not automatically convert strings into factors.
-#' @return An empty data frame with columns Task, Duration, Importance, Urgency, and Enjoyability.
+#' @return An empty data frame with the following columns:
+#' \itemize{
+#' \item \strong{Task}: the names of individual tasks
+#' \item \strong{Duration}: the estimated duration of tasks
+#' \item \strong{Importance}: how important the task is on a scale 1-4
+#' \item \strong{Urgency}: how urgent the task is on a scale 1-4
+#' \item \strong{Enjoyability}: how enjoyable the task is on a scale 1-3
+#' } 
 #' @examples
 #' # Create an empty task data frame 
 #' create_empty_task_df()
@@ -26,7 +33,14 @@ create_empty_task_df <- function() {
 #' @param urgency integer(1-4), how urgent the task is
 #' @param enjoyability integer(1-3), how enjoyable the task is
 #' @param shiny Boolean, whether this function will be used with shiny's reactive dataframe, default is TRUE 
-#' @return the updated task data frame
+#' @return the updated task data frame with the following columns:
+#' \itemize{
+#' \item \strong{Task}: the names of individual tasks
+#' \item \strong{Duration}: the estimated duration of tasks
+#' \item \strong{Importance}: how important the task is on a scale 1-4
+#' \item \strong{Urgency}: how urgent the task is on a scale 1-4
+#' \item \strong{Enjoyability}: how enjoyable the task is on a scale 1-3
+#' } 
 #' @examples
 #' # Add a task to an example data frame
 #' example_df = data.frame(Task = c("Meeting preparation", "Programming", "Watch lecture recording"),Duration = c(30, 60, 75),Importance = c(4, 3, 3),Urgency = c(4, 2, 3),Enjoyability = c(1, 3, 2),stringsAsFactors = FALSE)
@@ -50,7 +64,7 @@ add_task <- function(df, task, duration, importance, urgency, enjoyability, shin
 }
 
 #' @title Generate an Eisenhower Matrix
-#' @description Creates an Eisenhower matrix based on a data frame with tasks.
+#' @description Creates an Eisenhower matrix based on a data frame with tasks. Eisenhower matrix shows tasks' urgency on the x-axis and importance on the y-axis. It provides a good way to visualize tasks that should be prioritized.
 #' @param df name of the task data frame
 #' @return the Eisenhower matrix
 #' @examples
@@ -67,18 +81,12 @@ generate_eisenhower_matrix <- function(df){
     ggplot2::theme_minimal() +
     ggplot2::theme(
       plot.title = ggplot2::element_text(size = 20, face = "bold", hjust = 0.5),  # Title size
-      axis.title = ggplot2::element_text(size = 16),  # Axis labels size
-      axis.text = ggplot2::element_text(size = 16)  # Axis tick labels size
+      axis.title = ggplot2::element_text(size = 16, face = "bold"),  # Axis labels size
+      axis.text = ggplot2::element_text(size = 16, face = "bold"),  # Axis tick labels size
+      panel.border = ggplot2::element_rect(colour = "black", fill = NA, size = 1.5)
     ) +
     ggplot2::geom_hline(yintercept = 2.5, linetype = "solid", color = "black", linewidth = 1) +  # Horizontal line
     ggplot2::geom_vline(xintercept = 2.5, linetype = "solid", color = "black", linewidth = 1)  # Vertical line
 }
 
-# update_preferences <- function(free_time = 360, start_task_under_5 = TRUE, start_enjoyable = FALSE) {
-#   # not sure if I need this function
-# }
-# 
-# generate_todolist <- function(){
-#   # still need to develop this function
-#   # generate todolist based on preferences 
-# }
+

@@ -22,7 +22,14 @@ add_task(df, task, duration, importance, urgency, enjoyability, shiny = TRUE)
 \item{shiny}{Boolean, whether this function will be used with shiny's reactive dataframe, default is TRUE}
 }
 \value{
-the updated task data frame
+the updated task data frame with the following columns:
+\itemize{
+\item \strong{Task}: the names of individual tasks
+\item \strong{Duration}: the estimated duration of tasks
+\item \strong{Importance}: how important the task is on a scale 1-4
+\item \strong{Urgency}: how urgent the task is on a scale 1-4
+\item \strong{Enjoyability}: how enjoyable the task is on a scale 1-3
+}
 }
 \description{
 Adds a new task with its variables to the task data frame with columns Task, Duration, Importance, Urgency, and Enjoyability.

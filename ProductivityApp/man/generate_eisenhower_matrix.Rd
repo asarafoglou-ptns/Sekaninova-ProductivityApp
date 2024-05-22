@@ -13,7 +13,7 @@ generate_eisenhower_matrix(df)
 the Eisenhower matrix
 }
 \description{
-Creates an Eisenhower matrix based on a data frame with tasks.
+Creates an Eisenhower matrix based on a data frame with tasks. Eisenhower matrix shows tasks' urgency on the x-axis and importance on the y-axis. It provides a good way to visualize tasks that should be prioritized.
 }
 \examples{
 # Generate an Eisenhower matrix based on an example data frame
