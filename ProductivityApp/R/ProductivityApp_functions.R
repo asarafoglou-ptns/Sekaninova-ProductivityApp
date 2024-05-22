@@ -89,4 +89,82 @@ generate_eisenhower_matrix <- function(df){
     ggplot2::geom_vline(xintercept = 2.5, linetype = "solid", color = "black", linewidth = 1)  # Vertical line
 }
 
+#' @title Order Task Data Frame
+#' @description Orders the task data frame based on urgency, importance, and user preferences. Urgency takes precedence before importance and importance takes precedence before enjoyability.
+#' @param df name of the task data frame
+#' @param start_enjoy logical, whether user prefers to start with most or least enjoyable tasks that have equal urgency and importance.
+#' @param start_short logical, whether user wants to start with short tasks (e.g. tasks that take less than 5 mins) regardless of their urgency, importance, and enjoyability.
+#' @param short_time numeric, what task duration user considers to be short, this parameter is relevant if start_short is TRUE, default value is 5 minutes.
+#' @return the ordered task data frame with the following columns:
+#' \itemize{
+#' \item \strong{Task}: the names of individual tasks
+#' \item \strong{Duration}: the estimated duration of tasks
+#' \item \strong{Importance}: how important the task is on a scale 1-4
+#' \item \strong{Urgency}: how urgent the task is on a scale 1-4
+#' \item \strong{Enjoyability}: how enjoyable the task is on a scale 1-3
+#' }
+#' @examples
+#' # Order an example task data frame
+#' example_df = data.frame(Task = c("Meeting preparation", "Programming", "Watch lecture recording", "Make a dentist appointment for August", "Update my CV"),Duration = c(30, 60, 75, 3, 30),Importance = c(4, 3, 3, 2, 4),Urgency = c(4, 2, 3, 4, 4),Enjoyability = c(1, 3, 2, 1, 2),stringsAsFactors = FALSE)
+#' order_task_df(example_df)
+#' #' @export
+order_task_df <- function(df, start_enjoy = FALSE, start_short = TRUE, short_time = 5){
+  # First order tasks based on urgency, importance, and user's enjoyability preference
+  ordered_tasks <- df %>%
+    arrange(desc(Urgency), desc(Importance), if(start_enjoy) desc(Enjoyability) else Enjoyability)
+  
+  # Next, tasks with duration lower or equal to short_time will be moved up if 
+  # the user prefers to start with short tasks even if they are not urgent/important
+  if (start_short){
+    ordered_tasks <- ordered_tasks %>%
+      mutate(ShortTask = if_else(Duration <= short_time, 1, 0)) %>%
+      arrange(desc(ShortTask)) %>%
+      select(-ShortTask)
+  }
+  
+  return(ordered_tasks)
+}
+
+#' @title Generate a To-Do List
+#' @description Generates a to-do list based on a given task data frame. It uses the order_task_df function to first order the tasks based on urgency, importance and user preferences. Next, it assigns time intervals to each task and returns a data frame containing a to-do list with intervals and tasks.
+#' @param df name of the task data frame
+#' @param start_enjoy logical, whether user prefers to start with most or least enjoyable tasks that have equal urgency and importance.
+#' @param start_short logical, whether user wants to start with short tasks (e.g. tasks that take less than 5 mins) regardless of their urgency, importance, and enjoyability.
+#' @param short_time numeric, what task duration user considers to be short, this parameter is relevant if start_short is TRUE, default value is 5 minutes.
+#' @param start_time character in a format "H:M", represents the time when the user wants to start working on their tasks.
+#' @param available_time numeric, how much available time the user has (in minutes).
+#' @return the to-do list data frame with time intervals and tasks
+#' @examples
+#' # Generate a to-do list based on this example task data frame
+#' example_df = data.frame(Task = c("Meeting preparation", "Programming", "Watch lecture recording", "Make a dentist appointment for August", "Update my CV"),Duration = c(30, 60, 75, 3, 30),Importance = c(4, 3, 3, 2, 4),Urgency = c(4, 2, 3, 4, 4),Enjoyability = c(1, 3, 2, 1, 2),stringsAsFactors = FALSE)
+#' generate_todolist(example_df)
+#' #' @export
+generate_todolist <- function(df, start_enjoy = FALSE, start_short = TRUE, short_time = 5, start_time = "9:00", available_time = 480){
+  # Use the order_task_df helper function to order the task data frame
+  df <- order_task_df(df, start_enjoy, start_short, short_time)
+  
+  # Get the start time
+  start <- as.POSIXct(start_time, format = "%H:%M", tz = "UTC")
+  
+  # Create an empty character vector for task intervals
+  task_intervals <- character(nrow(df))
+  
+  # Loop over tasks
+  for (i in 1:nrow(df)) {
+    # Assign start and end times for the current task
+    end <- start + as.numeric(df$Duration[i]) * 60  # We need to convert duration from minutes to seconds
+    interval <- paste(format(start, "%H:%M"), format(end, "%H:%M"), sep = "-")
+    
+    task_intervals[i] <- interval
+    start <- end
+  }
+  
+  # Add task_intervals to the dataframe
+  df$Interval <- task_intervals
+  
+  # I want to display only intervals and tasks
+  df <- df %>% select(Interval, Task)
+  
+  return(df)
+}
 
