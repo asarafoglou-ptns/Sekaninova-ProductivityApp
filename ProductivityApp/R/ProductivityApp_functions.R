@@ -133,13 +133,14 @@ order_task_df <- function(df, start_enjoy = FALSE, start_short = TRUE, short_tim
 #' @param short_time numeric, what task duration user considers to be short, this parameter is relevant if start_short is TRUE, default value is 5 minutes.
 #' @param start_time character in a format "H:M", represents the time when the user wants to start working on their tasks.
 #' @param available_time numeric, how much available time the user has (in minutes).
+#' @param show_intervals logical, whether user wants to have time intervals next to every task
 #' @return the to-do list data frame with time intervals and tasks
 #' @examples
 #' # Generate a to-do list based on this example task data frame
 #' example_df = data.frame(Task = c("Meeting preparation", "Programming", "Watch lecture recording", "Make a dentist appointment for August", "Update my CV"),Duration = c(30, 60, 75, 3, 30),Importance = c(4, 3, 3, 2, 4),Urgency = c(4, 2, 3, 4, 4),Enjoyability = c(1, 3, 2, 1, 2),stringsAsFactors = FALSE)
 #' generate_todolist(example_df)
 #' #' @export
-generate_todolist <- function(df, start_enjoy = FALSE, start_short = TRUE, short_time = 5, start_time = "9:00", available_time = 480){
+generate_todolist <- function(df, start_enjoy = FALSE, start_short = TRUE, short_time = 5, start_time = "9:00", available_time = 480, show_intervals = TRUE){
   # Use the order_task_df helper function to order the task data frame
   df <- order_task_df(df, start_enjoy, start_short, short_time)
   
@@ -162,9 +163,45 @@ generate_todolist <- function(df, start_enjoy = FALSE, start_short = TRUE, short
   # Add task_intervals to the dataframe
   df$Interval <- task_intervals
   
-  # I want to display only intervals and tasks
-  df <- df %>% select(Interval, Task)
-  
+  if (show_intervals == TRUE){
+    # I want to display only intervals and tasks
+    df <- df %>% select(Interval, Task)
+  }else{
+    df <- df %>% select(Task)
+  }
+
   return(df)
 }
+
+#' @title Generate a Productivity Plot
+#' @description Generates a productivity plot with estimated and actual duration of individual tasks. Time is shown on the x-axis and tasks on the y-axis.
+#' @param df name of the data frame with tasks and estimated and actual duration of each task
+#' @return The productivity plot with estimated and actual duration of individual tasks.
+#' @examples
+#' # Generate a productivity plot based on an example data frame
+#' example_df <- data.frame(Task = c("Meeting preparation", "Programming", "Watch lecture recording"), Estimated_duration = c(30, 120, 90), Actual_duration = c(41, 200, 85))
+#' get_productivity_plot(example_df)
+#' #' @export
+get_productivity_plot <- function(df){
+  # Long data frame for easier plotting
+  df_long <- data.frame(
+    Task = rep(my_df$Task, 2),
+    Type = c(rep("Estimated_duration", nrow(my_df)), rep("Actual_duration", nrow(my_df))),
+    Duration = c(my_df$Estimated_duration, my_df$Actual_duration)
+  )
+  
+  # Productivity plot
+  ggplot(df_long, aes(x = Duration, y = Task, color = Type)) +
+    geom_point(size = 3) +
+    scale_color_manual(values = c("Estimated_duration" = "blue", "Actual_duration" = "red")) +
+    labs(x = "Time (minutes)", y = " ", title = "Productivity Plot") +
+    theme_minimal() +
+    theme(
+      plot.title = element_text(size = 20, face = "bold", hjust = 0.5),  # Title size
+      axis.title = element_text(size = 16, face = "bold"),  # Axis labels size
+      axis.text = element_text(size = 16, face = "bold"),  # Axis tick labels size
+      panel.border = element_rect(colour = "black", fill = NA, size = 1.5)
+    )
+}
+
 
