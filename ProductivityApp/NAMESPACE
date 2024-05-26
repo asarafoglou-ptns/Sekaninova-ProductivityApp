@@ -3,3 +3,7 @@
 export(add_task)
 export(create_empty_task_df)
 export(generate_eisenhower_matrix)
+export(generate_todolist)
+export(get_productivity_plot)
+export(order_task_df)
+export(productivity_report)

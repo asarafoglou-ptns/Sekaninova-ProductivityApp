@@ -107,7 +107,7 @@ generate_eisenhower_matrix <- function(df){
 #' # Order an example task data frame
 #' example_df = data.frame(Task = c("Meeting preparation", "Programming", "Watch lecture recording", "Make a dentist appointment for August", "Update my CV"),Duration = c(30, 60, 75, 3, 30),Importance = c(4, 3, 3, 2, 4),Urgency = c(4, 2, 3, 4, 4),Enjoyability = c(1, 3, 2, 1, 2),stringsAsFactors = FALSE)
 #' order_task_df(example_df)
-#' #' @export
+#' @export
 order_task_df <- function(df, start_enjoy = FALSE, start_short = TRUE, short_time = 5){
   # First order tasks based on urgency, importance, and user's enjoyability preference
   ordered_tasks <- df %>%
@@ -139,7 +139,7 @@ order_task_df <- function(df, start_enjoy = FALSE, start_short = TRUE, short_tim
 #' # Generate a to-do list based on this example task data frame
 #' example_df = data.frame(Task = c("Meeting preparation", "Programming", "Watch lecture recording", "Make a dentist appointment for August", "Update my CV"),Duration = c(30, 60, 75, 3, 30),Importance = c(4, 3, 3, 2, 4),Urgency = c(4, 2, 3, 4, 4),Enjoyability = c(1, 3, 2, 1, 2),stringsAsFactors = FALSE)
 #' generate_todolist(example_df)
-#' #' @export
+#' @export
 generate_todolist <- function(df, start_enjoy = FALSE, start_short = TRUE, short_time = 5, start_time = "9:00", available_time = 480, show_intervals = TRUE){
   # Use the order_task_df helper function to order the task data frame
   df <- order_task_df(df, start_enjoy, start_short, short_time)
@@ -181,13 +181,13 @@ generate_todolist <- function(df, start_enjoy = FALSE, start_short = TRUE, short
 #' # Generate a productivity plot based on an example data frame
 #' example_df <- data.frame(Task = c("Meeting preparation", "Programming", "Watch lecture recording"), Estimated_duration = c(30, 120, 90), Actual_duration = c(41, 200, 85))
 #' get_productivity_plot(example_df)
-#' #' @export
+#' @export
 get_productivity_plot <- function(df){
   # Long data frame for easier plotting
   df_long <- data.frame(
-    Task = rep(my_df$Task, 2),
-    Type = c(rep("Estimated_duration", nrow(my_df)), rep("Actual_duration", nrow(my_df))),
-    Duration = c(my_df$Estimated_duration, my_df$Actual_duration)
+    Task = rep(df$Task, 2),
+    Type = c(rep("Estimated_duration", nrow(df)), rep("Actual_duration", nrow(df))),
+    Duration = c(df$Estimated_duration, df$Actual_duration)
   )
   
   # Productivity plot
@@ -202,6 +202,35 @@ get_productivity_plot <- function(df){
       axis.text = element_text(size = 16, face = "bold"),  # Axis tick labels size
       panel.border = element_rect(colour = "black", fill = NA, size = 1.5)
     )
+}
+
+#' @title Generate a Productivity Report
+#' @description Generates a productivity report with an overview of how long the user was productive and whether they tend to underestimate or overestimate the time it takes them to complete a task.
+#' @param df name of the data frame with tasks and estimated and actual duration of each task
+#' @return The productivity plot report with an overview of user's productivity.
+#' @examples
+#' # Generate a productivity plot based on an example data frame
+#' example_df <- data.frame(Task = c("Meeting preparation", "Programming", "Watch lecture recording"), Estimated_duration = c(30, 120, 90), Actual_duration = c(41, 200, 85))
+#' productivity_report(example_df)
+#' @export
+productivity_report <- function(df){
+  df <- df %>%
+    filter(!is.na(Actual_duration)) %>%
+    mutate(Estimation = ifelse(Actual_duration > Estimated_duration, "Underestimated",
+                              ifelse(Actual_duration == Estimated_duration, "Perfect",
+                                     "Overestimated")),
+           Estimation_dif = Estimated_duration - Actual_duration) 
+  
+  productive_time <- round(sum(df$Actual_duration))
+  productive_hours <- productive_time %/% 60
+  productive_mins <- productive_time %% 60
+  
+  best_est <- min(abs(df$Estimation_dif))
+  best_est_task <- df$Task[df$Estimation_dif == best_est | df$Estimation_dif == -best_est]
+  
+  report <- paste("In total, you've spent", productive_hours, "hours and", 
+                  productive_mins, "minutes on your tasks. You were able to best estimate the duration of the task:", best_est_task)
+  return(report)
 }
 
 

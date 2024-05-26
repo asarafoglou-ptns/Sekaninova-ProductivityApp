@@ -39,5 +39,4 @@ Generates a to-do list based on a given task data frame. It uses the order_task_
 # Generate a to-do list based on this example task data frame
 example_df = data.frame(Task = c("Meeting preparation", "Programming", "Watch lecture recording", "Make a dentist appointment for August", "Update my CV"),Duration = c(30, 60, 75, 3, 30),Importance = c(4, 3, 3, 2, 4),Urgency = c(4, 2, 3, 4, 4),Enjoyability = c(1, 3, 2, 1, 2),stringsAsFactors = FALSE)
 generate_todolist(example_df)
-#' @export
 }

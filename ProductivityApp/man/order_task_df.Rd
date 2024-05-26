@@ -32,5 +32,4 @@ Orders the task data frame based on urgency, importance, and user preferences. U
 # Order an example task data frame
 example_df = data.frame(Task = c("Meeting preparation", "Programming", "Watch lecture recording", "Make a dentist appointment for August", "Update my CV"),Duration = c(30, 60, 75, 3, 30),Importance = c(4, 3, 3, 2, 4),Urgency = c(4, 2, 3, 4, 4),Enjoyability = c(1, 3, 2, 1, 2),stringsAsFactors = FALSE)
 order_task_df(example_df)
-#' @export
 }
