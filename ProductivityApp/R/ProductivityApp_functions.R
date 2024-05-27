@@ -125,6 +125,46 @@ order_task_df <- function(df, start_enjoy = FALSE, start_short = TRUE, short_tim
   return(ordered_tasks)
 }
 
+#' @title Check Tasks Given Availability
+#' @description Generates a data frame and a message about unscheduled tasks for a to-do list based on user's time availability.   
+#' @param df name of the ordered task data frame  
+#' @param start_time start time in a format "%H:%M", when user wants to start working on their to-do list
+#' @param end_time end time in a format "%H:%M", until when user wants to work on their to-do list
+#' @return df and message:
+#' #' \itemize{
+#' \item \strong{Data Frame}: a data frame with tasks that can be scheduled based on user's availability.
+#' \item \strong{Message}: a message about whether some tasks couldn't be scheduled - either saying "All tasks were successfully scheduled!" or "The following tasks were not scheduled because there was not enough time available:" followed by the names of tasks that could not be scheduled.
+#' }
+#' @examples
+#' # Generate a data frame and a message about unscheduled tasks
+#' example_df <- data.frame(Task = c("Meeting preparation", "Programming", "Watch lecture recording", "Make a dentist appointment for August", "Update my CV"),Duration = c(30, 60, 75, 3, 30),Importance = c(4, 3, 3, 2, 4),Urgency = c(4, 2, 3, 4, 4),Enjoyability = c(1, 3, 2, 1, 2),stringsAsFactors = FALSE)
+#' example_ordered_df <- order_task_df(example_df)
+#' tasks_given_availability(example_ordered_df)
+#' @export
+tasks_given_availability <- function(df, start_time, end_time){
+  start_time <- as.POSIXct(start_time, format="%H:%M", tz = "UTC")
+  end_time <- as.POSIXct(end_time, format="%H:%M", tz = "UTC")
+  time_available <- as.numeric(difftime(end_time, start_time, units = "mins"))
+  
+  if (sum(df$Duration) <= time_available){
+    message <- "All tasks were successfully scheduled!"
+  }else{
+    task_fit <- FALSE
+    unscheduled_tasks <- c()
+    while(task_fit == FALSE){
+      unscheduled_tasks <- c(unscheduled_tasks, df$Task[nrow(df)])
+      df <- df[-nrow(df), ]
+      if (sum(df$Duration) <= time_available){
+        task_fit <- TRUE
+      }
+    }
+    unscheduled_tasks_string <- paste(unscheduled_tasks, collapse = ", ")
+    message <- paste("The following tasks were not scheduled because there was not enough time available:",
+                     unscheduled_tasks_string)
+  }
+  return(list(df = df, message = message))
+  }
+
 #' @title Generate a To-Do List
 #' @description Generates a to-do list based on a given task data frame. It uses the order_task_df function to first order the tasks based on urgency, importance and user preferences. Next, it assigns time intervals to each task and returns a data frame containing a to-do list with intervals and tasks.
 #' @param df name of the task data frame
@@ -140,9 +180,10 @@ order_task_df <- function(df, start_enjoy = FALSE, start_short = TRUE, short_tim
 #' example_df = data.frame(Task = c("Meeting preparation", "Programming", "Watch lecture recording", "Make a dentist appointment for August", "Update my CV"),Duration = c(30, 60, 75, 3, 30),Importance = c(4, 3, 3, 2, 4),Urgency = c(4, 2, 3, 4, 4),Enjoyability = c(1, 3, 2, 1, 2),stringsAsFactors = FALSE)
 #' generate_todolist(example_df)
 #' @export
-generate_todolist <- function(df, start_enjoy = FALSE, start_short = TRUE, short_time = 5, start_time = "9:00", available_time = 480, show_intervals = TRUE){
+generate_todolist <- function(df, start_enjoy = FALSE, start_short = TRUE, short_time = 5, start_time = "09:00", end_time = "17:00", show_intervals = TRUE){
   # Use the order_task_df helper function to order the task data frame
   df <- order_task_df(df, start_enjoy, start_short, short_time)
+  df <- tasks_given_availability(df, start_time, end_time)$df
   
   # Get the start time
   start <- as.POSIXct(start_time, format = "%H:%M", tz = "UTC")
@@ -193,14 +234,17 @@ get_productivity_plot <- function(df){
   # Productivity plot
   ggplot(df_long, aes(x = Duration, y = Task, color = Type)) +
     geom_point(size = 3) +
-    scale_color_manual(values = c("Estimated_duration" = "blue", "Actual_duration" = "red")) +
+    scale_color_manual(values = c("Estimated_duration" = "blue", "Actual_duration" = "red"),
+                       labels = c("Actual task duration", "Estimated task duration")) +
     labs(x = "Time (minutes)", y = " ", title = "Productivity Plot") +
     theme_minimal() +
     theme(
       plot.title = element_text(size = 20, face = "bold", hjust = 0.5),  # Title size
       axis.title = element_text(size = 16, face = "bold"),  # Axis labels size
       axis.text = element_text(size = 16, face = "bold"),  # Axis tick labels size
-      panel.border = element_rect(colour = "black", fill = NA, size = 1.5)
+      panel.border = element_rect(colour = "black", fill = NA, size = 1.5),
+      legend.text = element_text(size = 14),
+      legend.title = element_text(size = 16, face = "bold")
     )
 }
 

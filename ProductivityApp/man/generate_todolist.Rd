@@ -9,8 +9,8 @@ generate_todolist(
   start_enjoy = FALSE,
   start_short = TRUE,
   short_time = 5,
-  start_time = "9:00",
-  available_time = 480,
+  start_time = "09:00",
+  end_time = "17:00",
   show_intervals = TRUE
 )
 }
@@ -25,9 +25,9 @@ generate_todolist(
 
 \item{start_time}{character in a format "H:M", represents the time when the user wants to start working on their tasks.}
 
-\item{available_time}{numeric, how much available time the user has (in minutes).}
-
 \item{show_intervals}{logical, whether user wants to have time intervals next to every task}
+
+\item{available_time}{numeric, how much available time the user has (in minutes).}
 }
 \value{
 the to-do list data frame with time intervals and tasks
