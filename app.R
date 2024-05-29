@@ -317,6 +317,7 @@ server <- function(input, output, session) {
   ## PRODUCTIVITY REPORT TAB ---------------------------------------------------
   productivity_report_df <- reactiveVal(create_empty_task_df())
   
+  # This needs to be changed, we need to base this on time availability as well
   observeEvent(input$generate_list, {
     ordered_tdl <- order_task_df(tasks(), start_enjoy = input$least_enjoyable, start_short = input$short_tasks)
     ordered_tdl <- ordered_tdl %>%
@@ -351,7 +352,7 @@ server <- function(input, output, session) {
     output$productivity_report <- renderText(productivity_report(productivity_report_df()))
     output$productivity_plot <- renderPlot(get_productivity_plot(productivity_report_df()))
   })
-  
+
 }
 
 # Run the application

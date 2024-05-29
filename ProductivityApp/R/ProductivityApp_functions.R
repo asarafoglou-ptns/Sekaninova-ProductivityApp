@@ -73,9 +73,18 @@ add_task <- function(df, task, duration, importance, urgency, enjoyability, shin
 #' generate_eisenhower_matrix(df = example_df)
 #' @export
 generate_eisenhower_matrix <- function(df){
+  df <- df %>%
+    dplyr::group_by(Urgency, Importance) %>%
+    dplyr::mutate(
+      y_offsets = seq(0, by = 0.2, length.out = dplyr::n()),  # Create sequence of offsets
+      centered_y_offsets = y_offsets - mean(y_offsets),  # Center the offsets
+      y_offset = if(dplyr::n() == 1) 0 else centered_y_offsets  # Apply centered offsets or fixed offset for single task
+    ) %>%
+    dplyr::ungroup()
+  
   ggplot2::ggplot(df, ggplot2::aes(x = Urgency, y = Importance, label = Task)) +
-    ggplot2::geom_point(color = "blue", size = 3) +  # Points representing tasks
-    ggplot2::geom_text(size = 5, hjust = 0.5, vjust = 1.5) +  # Labels for tasks
+    ggplot2::geom_point(color = "blue", size = 3, alpha = 0.5) +  # Points representing tasks
+    ggplot2::geom_text(ggplot2::aes(y = Importance + y_offset), size = 5, hjust = 0.5, vjust = 1.5) +  # Labels for tasks
     ggplot2::xlim(0.5, 4.5) + ggplot2::ylim(0.5, 4.5) +  # Set limits for x and y axes
     ggplot2::labs(title = "Eisenhower Matrix", x = "Urgency", y = "Importance") +
     ggplot2::theme_minimal() +
@@ -117,9 +126,9 @@ order_task_df <- function(df, start_enjoy = FALSE, start_short = TRUE, short_tim
   # the user prefers to start with short tasks even if they are not urgent/important
   if (start_short){
     ordered_tasks <- ordered_tasks %>%
-      mutate(ShortTask = if_else(Duration <= short_time, 1, 0)) %>%
-      arrange(desc(ShortTask)) %>%
-      select(-ShortTask)
+      dplyr::mutate(ShortTask = dplyr::if_else(Duration <= short_time, 1, 0)) %>%
+      dplyr::arrange(desc(ShortTask)) %>%
+      dplyr::select(-ShortTask)
   }
   
   return(ordered_tasks)
@@ -227,24 +236,23 @@ get_productivity_plot <- function(df){
   # Long data frame for easier plotting
   df_long <- data.frame(
     Task = rep(df$Task, 2),
-    Type = c(rep("Estimated_duration", nrow(df)), rep("Actual_duration", nrow(df))),
+    Type = rep(c("Estimated task duration", "Actual task duration"), each = nrow(df)),
     Duration = c(df$Estimated_duration, df$Actual_duration)
   )
   
   # Productivity plot
-  ggplot(df_long, aes(x = Duration, y = Task, color = Type)) +
-    geom_point(size = 3) +
-    scale_color_manual(values = c("Estimated_duration" = "blue", "Actual_duration" = "red"),
-                       labels = c("Actual task duration", "Estimated task duration")) +
-    labs(x = "Time (minutes)", y = " ", title = "Productivity Plot") +
-    theme_minimal() +
-    theme(
-      plot.title = element_text(size = 20, face = "bold", hjust = 0.5),  # Title size
-      axis.title = element_text(size = 16, face = "bold"),  # Axis labels size
-      axis.text = element_text(size = 16, face = "bold"),  # Axis tick labels size
-      panel.border = element_rect(colour = "black", fill = NA, size = 1.5),
-      legend.text = element_text(size = 14),
-      legend.title = element_text(size = 16, face = "bold")
+  ggplot2::ggplot(df_long, ggplot2::aes(x = Duration, y = Task, fill = Type, color = Type)) +
+    ggplot2::geom_point(size = 3) +
+    # ggplot2::scale_fill_manual(values =c("blue", "red")) + # This didn't work for some reason
+    ggplot2::labs(x = "Time (minutes)", y = " ", title = "Productivity Plot") +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      plot.title = ggplot2::element_text(size = 20, face = "bold", hjust = 0.5),  # Title size
+      axis.title = ggplot2::element_text(size = 16, face = "bold"),  # Axis labels size
+      axis.text = ggplot2::element_text(size = 16, face = "bold"),  # Axis tick labels size
+      panel.border = ggplot2::element_rect(colour = "black", fill = NA, size = 1.5),
+      legend.text = ggplot2::element_text(size = 14),
+      legend.title = ggplot2::element_text(size = 16, face = "bold")
     )
 }
 
@@ -259,9 +267,9 @@ get_productivity_plot <- function(df){
 #' @export
 productivity_report <- function(df){
   df <- df %>%
-    filter(!is.na(Actual_duration)) %>%
-    mutate(Estimation = ifelse(Actual_duration > Estimated_duration, "Underestimated",
-                              ifelse(Actual_duration == Estimated_duration, "Perfect",
+    dplyr::filter(!is.na(Actual_duration)) %>%
+    dplyr::mutate(Estimation = dplyr::if_else(Actual_duration > Estimated_duration, "Underestimated",
+                              dplyr::if_else(Actual_duration == Estimated_duration, "Perfect",
                                      "Overestimated")),
            Estimation_dif = Estimated_duration - Actual_duration) 
   
