@@ -10,9 +10,11 @@ library(shiny)
 library(shinyWidgets)
 library(DT)
 library(tidyverse)
+library(shinyjs)
 
 # Define UI for the app
 ui <- fluidPage(
+  useShinyjs(),
   tags$head(
     # Adjust fonts, margins, buttons, sliding bars, etc.
     tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css2?family=Oswald:wght@500&display=swap"),
@@ -178,6 +180,12 @@ server <- function(input, output, session) {
   ## TO-DO LIST TAB ------------------------------------------------------------
   # Reactive data frame to store tasks
   tasks <- reactiveVal(create_empty_task_df())
+  
+  # Enable or disable the insert button based on whether user wrote down task name and duration
+  # To prevent the user from accidentally pressing the Insert button when they are not done with the task specification
+  observe({
+    shinyjs::toggleState("insert", condition = (input$task != "" && input$duration > 0))
+  })
   
   # Insert a task
   observeEvent(input$insert, add_task(tasks, input$task, input$duration, input$importance, input$urgency, input$enjoyable))
