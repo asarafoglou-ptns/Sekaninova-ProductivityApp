@@ -118,6 +118,7 @@ ui <- fluidPage(
                                h4("Overview of your tasks:", class = "title"),
                                DTOutput("taskTable"),
                                downloadButton("downloadData", "Download CSV"),
+                               actionButton("delete_button", "Delete Selected Tasks"),
                                tags$div(style = "height: 20px;"),
                                plotOutput("eisenhowerPlot")
                         ),
@@ -192,7 +193,7 @@ server <- function(input, output, session) {
   
   # Task table
   output$taskTable <- renderDT({
-    datatable(tasks(), options = list(pageLength = 5, lengthMenu = list(c(5, 10), c('5', '10'))))
+    datatable(tasks(), options = list(pageLength = 5, lengthMenu = list(c(5, 10), c('5', '10')))) # Task editing: editable = TRUE
   })
   
   # Uploading task csv
@@ -200,6 +201,30 @@ server <- function(input, output, session) {
     req(input$upload) # a file has to be uploaded
     tasks_data <- read.csv(input$upload$datapath) 
     tasks(tasks_data) # Replace existing tasks with the uploaded tasks
+  })
+  
+  # # Editing task data # CAUSING ERRORS - Users can delete the task (see below) and re-insert the correct version
+  # observeEvent(input$taskTable_cell_edit, {
+  #   info <- input$taskTable_cell_edit
+  #   str(info) # Print info to see its structure
+  #   row <- info$row
+  #   col <- info$col
+  #   value <- info$value
+  #   
+  #   # Update the corresponding value in the tasks data frame
+  #   current_tasks <- tasks()
+  #   current_tasks[row, col] <- value
+  #   tasks(current_tasks)
+  # })
+  
+  # Delete task
+  observeEvent(input$delete_button, {
+    selected_rows <- input$taskTable_rows_selected
+    if (!is.null(selected_rows) && length(selected_rows) > 0) {
+      current_tasks <- tasks()
+      current_tasks <- current_tasks[-selected_rows, ]
+      tasks(current_tasks)
+    }
   })
   
   # Downloading task csv
