@@ -151,7 +151,18 @@ ui <- fluidPage(
                                actionButton("reset_timer", "Reset", icon = icon("refresh")),
                                actionButton("task_done", "Task Completed", icon = icon("circle-check")),
                                tags$div(style = "height: 20px;")
-                        )
+                        ),
+                        column(3, offset = 1,
+                               h4("Time for a break?", class = "title"),
+                               selectInput("break_length", "Select break length:",
+                                           choices = c("5", "10", "15", "30"),
+                                           selected = "5"),
+                               # checkboxInput("count_break", "I want my break time to count into the 'Time spent on task'", value = FALSE), # This might be incorporated in the future, for now only pomodoro time counts
+                               div(textOutput("break_timer"), class = "timer-box"),
+                               actionButton("start_break", "Start", icon = icon("play")),
+                               actionButton("pause_break", "Pause", icon = icon("pause")),
+                               actionButton("reset_break", "Reset", icon = icon("refresh"))
+                               )
                       )
                       
              ),
@@ -167,7 +178,7 @@ ui <- fluidPage(
                       h4("Productivity Report", class = "title"),
                       fluidRow(
                         column(4,
-                               textOutput("productivity_report")
+                               div(textOutput("productivity_report"), class = "bold-text")
                         ),
                         column(6, offset = 1,
                                plotOutput("productivity_plot")
@@ -203,20 +214,6 @@ server <- function(input, output, session) {
     tasks(tasks_data) # Replace existing tasks with the uploaded tasks
   })
   
-  # # Editing task data # CAUSING ERRORS - Users can delete the task (see below) and re-insert the correct version
-  # observeEvent(input$taskTable_cell_edit, {
-  #   info <- input$taskTable_cell_edit
-  #   str(info) # Print info to see its structure
-  #   row <- info$row
-  #   col <- info$col
-  #   value <- info$value
-  #   
-  #   # Update the corresponding value in the tasks data frame
-  #   current_tasks <- tasks()
-  #   current_tasks[row, col] <- value
-  #   tasks(current_tasks)
-  # })
-  
   # Delete task
   observeEvent(input$delete_button, {
     selected_rows <- input$taskTable_rows_selected
@@ -242,9 +239,9 @@ server <- function(input, output, session) {
   
   # To-Do List
   observeEvent(input$generate_list, {
-    todolist <- generate_todolist(tasks(), start_enjoy = input$least_enjoyable, start_short = input$short_tasks, start_time = input$start_time, end_time = input$end_time)
+    tdl <- generate_todolist(tasks(), start_enjoy = input$least_enjoyable, start_short = input$short_tasks, start_time = input$start_time, end_time = input$end_time)
     output$todolist <- renderDT({
-      datatable(todolist, 
+      datatable(tdl, 
                 selection = "none", 
                 rownames = FALSE,  
                 options = list(lengthChange = FALSE, 
@@ -261,13 +258,16 @@ server <- function(input, output, session) {
   pomodoro_duration <- 25 #Adjust if you want to test this tab, original value is 25 mins
   pomodoro_duration_sec <- pomodoro_duration * 60
   
-  # Reactive values for the pomodoro to-do list, timer and the selected task
+  # Reactive values for the pomodoro to-do list, timer, break timer and the selected task
   pomodoro_todolist <- reactiveVal(create_empty_task_df())
   timer <- reactiveVal(pomodoro_duration_sec)
   timer_on <- reactiveVal(FALSE)
+  break_timer <- reactiveVal(300) # in seconds, updated below with the selected break_length
+  break_timer_on <- reactiveVal(FALSE)
   selected_task <- reactiveVal(1)
   elapsed_time <- reactiveVal(0)
   
+  # POMODORO TO-DO LIST
   # Pomodoro to-do list generated when the user presses the 'Get the To-Do List' button on the To-Do List tab
   observeEvent(input$generate_list, {
     pomodoro_tdl <- generate_todolist(tasks(), start_enjoy = input$least_enjoyable, start_short = input$short_tasks, start_time = input$start_time, end_time = input$end_time, show_intervals = FALSE)
@@ -286,6 +286,7 @@ server <- function(input, output, session) {
     })
   })
   
+  # POMODORO TIMER
   # Update the pomodoro timer every second if it's active
   observe({
     invalidateLater(1000, session)
@@ -315,7 +316,11 @@ server <- function(input, output, session) {
   observeEvent(input$pause_timer, {
     timer_on(FALSE)
     updateActionButton(session, "start_timer", label = "Continue", icon = icon("play"))})
-  observeEvent(input$reset_timer, {timer(pomodoro_duration_sec)})
+  observeEvent(input$reset_timer, {
+    timer_on(FALSE)
+    timer(pomodoro_duration_sec)
+    updateActionButton(session, "start_timer", label = "Start", icon = icon("play"))
+    })
   
   # Task Completed button → add a check mark to the completed task and move to the next task
   observeEvent(input$task_done, {
@@ -341,6 +346,47 @@ server <- function(input, output, session) {
     sprintf("%02d:%02d", time_left %/% 60, time_left %% 60)
   })
   
+  # BREAK TIMER
+  # Update break length
+  observeEvent(input$break_length, {
+    updated_break_length <- as.integer(input$break_length) * 60
+    break_timer(updated_break_length)
+  })
+  
+  # Update break timer every second
+  observe({
+    invalidateLater(1000, session)
+    if (break_timer_on()) {
+      isolate({
+        break_time_left <- break_timer()
+        if (break_time_left > 0) {
+          break_timer(break_time_left - 1)
+        } else {
+          # What happens after the time is up  
+          break_timer_on(FALSE)
+          break_timer(300) # Reset the timer to the default 5 min break
+        }
+      })
+    }
+  })
+  
+  # Start, pause, reset buttons (continue button when user presses Pause)
+  observeEvent(input$start_break, {break_timer_on(TRUE)})
+  observeEvent(input$pause_break, {
+    break_timer_on(FALSE)
+    updateActionButton(session, "start_break", label = "Continue", icon = icon("play"))})
+  observeEvent(input$reset_break, {
+    break_timer_on(FALSE)
+    break_timer(300)
+    updateActionButton(session, "start_break", label = "Start", icon = icon("play"))})
+  
+  # Render break timer
+  output$break_timer <- renderText({
+    break_time_left <- break_timer()
+    sprintf("%02d:%02d", break_time_left %/% 60, break_time_left %% 60)
+  })
+  
+  
   # Task selection
   observeEvent(input$pomodoro_todolist_rows_selected, {
     selected_task(input$pomodoro_todolist_rows_selected)
@@ -350,17 +396,18 @@ server <- function(input, output, session) {
   ## PRODUCTIVITY REPORT TAB ---------------------------------------------------
   productivity_report_df <- reactiveVal(create_empty_task_df())
   
-  # This needs to be changed, we need to base this on time availability as well
+  # Get the data frame for the productivity report
   observeEvent(input$generate_list, {
     ordered_tdl <- order_task_df(tasks(), start_enjoy = input$least_enjoyable, start_short = input$short_tasks)
-    ordered_tdl <- ordered_tdl %>%
+    updated_ordered_tdl <- tasks_given_availability(ordered_tdl, input$start_time, input$end_time)$df
+    updated_ordered_tdl <- updated_ordered_tdl %>%
       select(Task, Duration) %>%
       rename(Estimated_duration = Duration) %>%
       mutate(Actual_duration = NA)
-    productivity_report_df(ordered_tdl)
-    print(productivity_report_df)
+    productivity_report_df(updated_ordered_tdl)
   })
   
+  # Update the actual duration in the productivity data frame
   observeEvent(input$get_productivity_report, {
     pomodoro_data <- pomodoro_todolist()
     updated_productivity_df <- productivity_report_df()
