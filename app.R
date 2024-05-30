@@ -4,7 +4,7 @@
 # ====         ================               
 # 27-May-24     Elena Sekaninova                 
 # ------------------------------------------------------------------------------
-<<<<<<< HEAD
+
 # Installing packages
 # devtools::install_github("asarafoglou-ptns/Sekaninova-ProductivityApp/ProductivityApp")
 # install.packages("shiny")
@@ -14,9 +14,6 @@
 # install.packages("shinyjs")
 
 # Loading packages
-=======
-
->>>>>>> da86061c16e553208d60e72138f4ce1ea8b827b7
 library(ProductivityApp)
 library(shiny)
 library(shinyWidgets)
