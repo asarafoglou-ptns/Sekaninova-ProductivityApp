@@ -1,0 +1,458 @@
+## My shiny Productivity App - 2024 Programming The Next Step
+#
+# Date            Programmer                  
+# ====         ================               
+# 27-May-24     Elena Sekaninova                 
+# ------------------------------------------------------------------------------
+<<<<<<< HEAD
+# Installing packages
+# devtools::install_github("asarafoglou-ptns/Sekaninova-ProductivityApp/ProductivityApp")
+# install.packages("shiny")
+# install.packages("shinyWidgets")
+# install.packages("DT")
+# install.packages("tidyverse")
+# install.packages("shinyjs")
+
+# Loading packages
+=======
+
+>>>>>>> da86061c16e553208d60e72138f4ce1ea8b827b7
+library(ProductivityApp)
+library(shiny)
+library(shinyWidgets)
+library(DT)
+library(tidyverse)
+library(shinyjs)
+
+# Define UI for the app
+ui <- fluidPage(
+  useShinyjs(),
+  tags$head(
+    # Adjust fonts, margins, buttons, sliding bars, etc.
+    tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css2?family=Oswald:wght@500&display=swap"),
+    tags$style(HTML("
+      .title {
+        font-family: 'Oswald', sans-serif;
+        font-size: 2.2em;
+        margin-bottom: 20px;
+      }
+      .btn {
+        background-color: black;
+        border-color: black;    
+        color: white;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);        
+      }
+      .js-range-slider {
+        background-color: black; /* Black track */
+        border-color: black;     /* Black border */
+        color: white;            /* White text */
+      }
+      .irs-bar {
+        background-color: black !important; /* Black bar */
+        border-color: black !important;     /* Black border */
+      }
+      .irs-bar-edge {
+        background-color: black !important; /* Black edge */
+        border-color: black !important;     /* Black border */
+      }
+      .irs-line {
+        background-color: black !important; /* Black line */
+        border-color: black !important;     /* Black border */
+      }
+      .irs-grid-text {
+        color: black !important;            /* Black grid text */
+      }
+      .irs-grid-pol {
+        background-color: black !important; /* Black grid line */
+        border-color: black !important;     /* Black border */
+      }
+      .irs-min, .irs-max, .irs-from, .irs-to, .irs-single {
+        background-color: black !important; /* Black text background */
+        color: white !important;            /* White text */
+      }
+      .timer-box {
+        background-color: black;
+        color: white;
+        padding: 20px;
+        font-size: 48px;
+        text-align: center;
+        border-radius: 10px;
+        box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
+        margin: 20px 0;
+      }
+      .bold-text {
+        font-weight: bold;
+      }
+    "))
+  ),
+  
+  # Application title
+  titlePanel(title = div("Productivity App", class = "title")),
+  
+  # Navigation bar with tabs
+  navbarPage("",
+             tabPanel("About",
+                      fluidRow(
+                        column(8, offset = 0.7,
+                               h3("Welcome to the Productivity App!", class = "title"),
+                               p("This app is designed to help you manage your tasks efficiently using various productivity techniques."),
+                               br(),
+                               h4("How to Use the App:"),
+                               p("1. ", strong("To-Do List:"), " This section allows you to add tasks, specify their duration, urgency, importance, and enjoyability. You can also generate a prioritized to-do list based on your preferences."),
+                               p("2. ", strong("Pomodoro:"), " A timer to help you manage your work sessions using the Pomodoro technique. By using the timer, the time you spent on individual tasks gets automatically updated."),
+                               p("3. ", strong("Productivity Report:"), " Get insights into your productivity based on the tasks you have completed."),
+                               br(),
+                               h4("Steps to Add and Prioritize Tasks:"),
+                               p("1. ", strong("Add Tasks:"), " Enter the task details including the task name, duration, urgency, importance, and enjoyability."),
+                               p("2. ", strong("Generate To-Do List:"), " Set your preferences for starting with short tasks or less enjoyable tasks and click on 'Get the To-Do List' button to generate a prioritized list."),
+                               p("3. ", strong("Download Tasks:"), " You can download your tasks as a CSV file for future reference."),
+                               p("4. ", strong("View Eisenhower Matrix:"), " Visualize your tasks in the Eisenhower Matrix to see their urgency and importance."),
+                               br(),
+                               h4("Pomodoro Technique:"),
+                               p("Use the Pomodoro timer to break your work into intervals, traditionally 25 minutes in length, separated by short breaks. This can help improve focus and productivity.")
+                        )
+                      )
+             ),
+             tabPanel("To-Do List",
+                      fluidRow(
+                        column(3,
+                               h4("Add your tasks:", class = "title"),
+                               textInput("task", "Task:", ""),
+                               numericInput("duration", "Duration (in mins):", value = NULL),
+                               sliderInput("urgency", "Urgency:", min = 1, max = 4, value = 2, step = 1),
+                               sliderInput("importance", "Importance:", min = 1, max = 4, value = 2, step = 1),
+                               sliderInput("enjoyable", "How enjoyable:", min = 1, max = 3, value = 2, step = 1),
+                               actionButton("insert", "Insert"),
+                               tags$div(style = "height: 20px;"), 
+                               fileInput("upload", "Or upload a csv file with your tasks:", accept = ".csv")                               
+                        ),
+                        column(5,
+                               h4("Overview of your tasks:", class = "title"),
+                               DTOutput("taskTable"),
+                               downloadButton("downloadData", "Download CSV"),
+                               actionButton("delete_button", "Delete Selected Tasks"),
+                               tags$div(style = "height: 20px;"),
+                               plotOutput("eisenhowerPlot")
+                        ),
+                        column(3, offset = 1,
+                               h4("To-Do list preferences:", class = "title"),
+                               timeInput("start_time", "Enter start time:", value = "09:00"),
+                               timeInput("end_time", "Enter end time:", value = "17:00"),
+                               checkboxInput("short_tasks", "Start with tasks that take 5 mins or less", value = TRUE),
+                               checkboxInput("least_enjoyable", "Start with the least enjoyable tasks", value = TRUE),
+                               actionButton("generate_list", "Get the To-Do List"),
+                               tags$div(style = "height: 20px;"), # br(),
+                               h4("Your To-Do List:", class = "title"),
+                               DTOutput("todolist"),
+                               tags$div(style = "height: 20px;"),
+                               div(textOutput("task_message"), class = "bold-text")
+                        )
+                      )
+             ),
+             tabPanel("Pomodoro",
+                      fluidRow(
+                        column(3,
+                               h4("To-Do List:", class = "title"),
+                               DTOutput("pomodoro_todolist")
+                        ),
+                        column(3, offset = 1,
+                               h4("Pomodoro Timer", class = "title"),
+                               div(textOutput("timer"), class = "timer-box"),
+                               actionButton("start_timer", "Start", icon = icon("play")),
+                               actionButton("pause_timer", "Pause", icon = icon("pause")),
+                               actionButton("reset_timer", "Reset", icon = icon("refresh")),
+                               actionButton("task_done", "Task Completed", icon = icon("circle-check")),
+                               tags$div(style = "height: 20px;")
+                        ),
+                        column(3, offset = 1,
+                               h4("Time for a break?", class = "title"),
+                               selectInput("break_length", "Select break length:",
+                                           choices = c("5", "10", "15", "30"),
+                                           selected = "5"),
+                               # checkboxInput("count_break", "I want my break time to count into the 'Time spent on task'", value = FALSE), # This might be incorporated in the future, for now only pomodoro time counts
+                               div(textOutput("break_timer"), class = "timer-box"),
+                               actionButton("start_break", "Start", icon = icon("play")),
+                               actionButton("pause_break", "Pause", icon = icon("pause")),
+                               actionButton("reset_break", "Reset", icon = icon("refresh"))
+                               )
+                      )
+                      
+             ),
+             tabPanel("Productivity Report",
+                      fluidRow(
+                        column(4,
+                               p("If you are done with your tasks for today, click the button below to see your Productivity Report based on the data from the To-Do list and Pomodoro tab"),
+                               actionButton("get_productivity_report", "Generate Productivity Report")),
+                        column(4, offset = 1,
+                               p("Or alternatively, you can upload a csv file with your tasks and their estimated and actual durations. This will automatically generate the Productivity Report."),
+                               fileInput("upload_report", "Upload a csv file with tasks and duration:", accept = ".csv"))
+                      ),
+                      h4("Productivity Report", class = "title"),
+                      fluidRow(
+                        column(4,
+                               div(textOutput("productivity_report"), class = "bold-text")
+                        ),
+                        column(6, offset = 1,
+                               plotOutput("productivity_plot")
+                        )
+                      )
+             )
+  )
+)
+
+server <- function(input, output, session) {
+  ## TO-DO LIST TAB ------------------------------------------------------------
+  # Reactive data frame to store tasks
+  tasks <- reactiveVal(create_empty_task_df())
+  
+  # Enable or disable the insert button based on whether user wrote down task name and duration
+  # To prevent the user from accidentally pressing the Insert button when they are not done with the task specification
+  observe({
+    shinyjs::toggleState("insert", condition = (input$task != "" && input$duration > 0))
+  })
+  
+  # Insert a task
+  observeEvent(input$insert, add_task(tasks, input$task, input$duration, input$importance, input$urgency, input$enjoyable))
+  
+  # Task table
+  output$taskTable <- renderDT({
+    datatable(tasks(), rownames = FALSE, options = list(pageLength = 5, lengthMenu = list(c(5, 10), c('5', '10')))) # Task editing: editable = TRUE
+  })
+  
+  # Uploading task csv
+  observeEvent(input$upload, {
+    req(input$upload) # a file has to be uploaded
+    tasks_data <- read.csv(input$upload$datapath) 
+    tasks(tasks_data) # Replace existing tasks with the uploaded tasks
+  })
+  
+  # Delete task
+  observeEvent(input$delete_button, {
+    selected_rows <- input$taskTable_rows_selected
+    if (!is.null(selected_rows) && length(selected_rows) > 0) {
+      current_tasks <- tasks()
+      current_tasks <- current_tasks[-selected_rows, ]
+      tasks(current_tasks)
+    }
+  })
+  
+  # Downloading task csv
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste("tasks-", Sys.Date(), ".csv", sep="")
+    },
+    content = function(file) {
+      write.csv(tasks(), file, row.names = FALSE)
+    }
+  )
+  
+  # Eisenhower matrix 
+  output$eisenhowerPlot <- renderPlot(generate_eisenhower_matrix(df=tasks()))
+  
+  # To-Do List
+  observeEvent(input$generate_list, {
+    tdl <- generate_todolist(tasks(), start_enjoy = input$least_enjoyable, start_short = input$short_tasks, start_time = input$start_time, end_time = input$end_time)
+    output$todolist <- renderDT({
+      datatable(tdl, 
+                selection = "none", 
+                rownames = FALSE,  
+                options = list(lengthChange = FALSE, 
+                               searching = FALSE,
+                               paging = FALSE,
+                               info = FALSE,
+                               ordering = FALSE))
+    })
+    ordered_tasks <- order_task_df(tasks(), start_enjoy = input$least_enjoyable, start_short = input$short_tasks)
+    avail_info <- tasks_given_availability(ordered_tasks, start_time = input$start_time, end_time = input$end_time)
+    
+    # Update task_message properly, extra lines of code necessary because the 
+    # to-do list was not correctly updating when going from all tasks scheduled
+    # to some tasks not scheduled
+    output$task_message <- renderText({
+      avail_info$message
+    })
+  })
+  
+  ## POMODORO TAB --------------------------------------------------------------
+  pomodoro_duration <- 25 #Adjust if you want to test this tab, original value is 25 mins
+  pomodoro_duration_sec <- pomodoro_duration * 60
+  
+  # Reactive values for the pomodoro to-do list, timer, break timer and the selected task
+  pomodoro_todolist <- reactiveVal(create_empty_task_df())
+  timer <- reactiveVal(pomodoro_duration_sec)
+  timer_on <- reactiveVal(FALSE)
+  break_timer <- reactiveVal(300) # in seconds, updated below with the selected break_length
+  break_timer_on <- reactiveVal(FALSE)
+  selected_task <- reactiveVal(1)
+  elapsed_time <- reactiveVal(0)
+  
+  # POMODORO TO-DO LIST
+  # Pomodoro to-do list generated when the user presses the 'Get the To-Do List' button on the To-Do List tab
+  observeEvent(input$generate_list, {
+    pomodoro_tdl <- generate_todolist(tasks(), start_enjoy = input$least_enjoyable, start_short = input$short_tasks, start_time = input$start_time, end_time = input$end_time, show_intervals = FALSE)
+    pomodoro_tdl$`Time spent on task` <- NA
+    pomodoro_todolist(pomodoro_tdl)
+    output$pomodoro_todolist <- renderDT({
+      datatable(pomodoro_todolist(), 
+                selection = list(mode = "single", selected = selected_task()), 
+                rownames = FALSE, 
+                options = list(lengthChange = FALSE, 
+                               searching = FALSE,
+                               paging = FALSE,
+                               info = FALSE,
+                               ordering = FALSE),
+      )
+    })
+  })
+  
+  # POMODORO TIMER
+  # Update the pomodoro timer every second if it's active
+  observe({
+    invalidateLater(1000, session)
+    if (timer_on()) {
+      isolate({
+        time_left <- timer()
+        if (time_left > 0) {
+          timer(time_left - 1)
+        } else {
+          # What happens after the time is up  
+          timer_on(FALSE)
+          selected_task_index <- selected_task()
+          new_todolist <- pomodoro_todolist()
+          current_time <- elapsed_time()
+          elapsed_time(current_time + pomodoro_duration)
+          new_todolist[selected_task_index, "Time spent on task"] <- elapsed_time()
+          pomodoro_todolist(new_todolist)
+          timer(pomodoro_duration_sec) # Reset the timer after the pomodoro is done
+          updateActionButton(session, "start_timer", label = "Start", icon = icon("play")) # This is not working, the Start button is still gray
+        }
+      })
+    }
+  })
+  
+  # Start, pause, reset buttons (continue button when user presses Pause)
+  observeEvent(input$start_timer, {timer_on(TRUE)})
+  observeEvent(input$pause_timer, {
+    timer_on(FALSE)
+    updateActionButton(session, "start_timer", label = "Continue", icon = icon("play"))})
+  observeEvent(input$reset_timer, {
+    timer_on(FALSE)
+    timer(pomodoro_duration_sec)
+    updateActionButton(session, "start_timer", label = "Start", icon = icon("play"))
+    })
+  
+  # Task Completed button → add a check mark to the completed task and move to the next task
+  observeEvent(input$task_done, {
+    timer_on(FALSE)
+    selected_task_index <- input$pomodoro_todolist_rows_selected
+    todolist_update <- pomodoro_todolist()
+    if (!is.null(selected_task_index)) {
+      todolist_update$Task[selected_task_index] <- paste('\u2705', todolist_update$Task[selected_task_index])
+      current_time <- elapsed_time()
+      mins_to_add <- (pomodoro_duration_sec - timer()) / 60 # I want to know how much time in mins passed
+      elapsed_time(current_time + mins_to_add)
+      todolist_update[selected_task_index, "Time spent on task"] <- elapsed_time()
+      pomodoro_todolist(todolist_update)
+      selected_task(selected_task_index + 1)  
+      elapsed_time(0)
+      timer(pomodoro_duration_sec) # Reset timer
+    } 
+  })
+  
+  # Render timer
+  output$timer <- renderText({
+    time_left <- timer()
+    sprintf("%02d:%02d", time_left %/% 60, time_left %% 60)
+  })
+  
+  # BREAK TIMER
+  # Update break length
+  observeEvent(input$break_length, {
+    updated_break_length <- as.integer(input$break_length) * 60
+    break_timer(updated_break_length)
+  })
+  
+  # Update break timer every second
+  observe({
+    invalidateLater(1000, session)
+    if (break_timer_on()) {
+      isolate({
+        break_time_left <- break_timer()
+        if (break_time_left > 0) {
+          break_timer(break_time_left - 1)
+        } else {
+          # What happens after the time is up  
+          break_timer_on(FALSE)
+          break_timer(300) # Reset the timer to the default 5 min break
+        }
+      })
+    }
+  })
+  
+  # Start, pause, reset buttons (continue button when user presses Pause)
+  observeEvent(input$start_break, {break_timer_on(TRUE)})
+  observeEvent(input$pause_break, {
+    break_timer_on(FALSE)
+    updateActionButton(session, "start_break", label = "Continue", icon = icon("play"))})
+  observeEvent(input$reset_break, {
+    break_timer_on(FALSE)
+    break_timer(300)
+    updateActionButton(session, "start_break", label = "Start", icon = icon("play"))})
+  
+  # Render break timer
+  output$break_timer <- renderText({
+    break_time_left <- break_timer()
+    sprintf("%02d:%02d", break_time_left %/% 60, break_time_left %% 60)
+  })
+  
+  
+  # Task selection
+  observeEvent(input$pomodoro_todolist_rows_selected, {
+    selected_task(input$pomodoro_todolist_rows_selected)
+  })
+  
+  
+  ## PRODUCTIVITY REPORT TAB ---------------------------------------------------
+  productivity_report_df <- reactiveVal(create_empty_task_df())
+  
+  # Get the data frame for the productivity report
+  observeEvent(input$generate_list, {
+    ordered_tdl <- order_task_df(tasks(), start_enjoy = input$least_enjoyable, start_short = input$short_tasks)
+    updated_ordered_tdl <- tasks_given_availability(ordered_tdl, input$start_time, input$end_time)$df
+    updated_ordered_tdl <- updated_ordered_tdl %>%
+      select(Task, Duration) %>%
+      rename(Estimated_duration = Duration) %>%
+      mutate(Actual_duration = NA)
+    productivity_report_df(updated_ordered_tdl)
+  })
+  
+  # Update the actual duration in the productivity data frame
+  observeEvent(input$get_productivity_report, {
+    pomodoro_data <- pomodoro_todolist()
+    updated_productivity_df <- productivity_report_df()
+    updated_productivity_df <- updated_productivity_df %>%
+      mutate(Actual_duration = pomodoro_data$`Time spent on task`) # %>% # If we wanted to show only tasks that the user worked on and completed.
+    # filter(!is.na(Actual_duration) & grepl("^\u2705", Task)) # TRY THIS
+    
+    productivity_report_df(updated_productivity_df)
+    output$productivity_report <- renderText({
+      isolate({
+        productivity_report(productivity_report_df())
+      })
+    })
+    output$productivity_plot <- renderPlot(get_productivity_plot(productivity_report_df()))
+  })
+  
+  # Uploading a csv file with tasks and estimated and actual durations
+  observeEvent(input$upload_report, {
+    req(input$upload_report) # a file has to be uploaded
+    report_data <- read.csv(input$upload_report$datapath) 
+    productivity_report_df(report_data) # Replace existing tasks with the uploaded tasks
+    output$productivity_report <- renderText(productivity_report(productivity_report_df()))
+    output$productivity_plot <- renderPlot(get_productivity_plot(productivity_report_df()))
+  })
+
+}
+
+# Run the application
+shinyApp(ui = ui, server = server)
