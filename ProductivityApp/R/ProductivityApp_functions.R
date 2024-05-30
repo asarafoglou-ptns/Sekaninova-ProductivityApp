@@ -120,14 +120,14 @@ generate_eisenhower_matrix <- function(df){
 order_task_df <- function(df, start_enjoy = FALSE, start_short = TRUE, short_time = 5){
   # First order tasks based on urgency, importance, and user's enjoyability preference
   ordered_tasks <- df %>%
-    arrange(desc(Urgency), desc(Importance), if(start_enjoy) desc(Enjoyability) else Enjoyability)
+    dplyr::arrange(dplyr::desc(Urgency), dplyr::desc(Importance), if(start_enjoy) dplyr::desc(Enjoyability) else Enjoyability)
   
   # Next, tasks with duration lower or equal to short_time will be moved up if 
   # the user prefers to start with short tasks even if they are not urgent/important
   if (start_short){
     ordered_tasks <- ordered_tasks %>%
       dplyr::mutate(ShortTask = dplyr::if_else(Duration <= short_time, 1, 0)) %>%
-      dplyr::arrange(desc(ShortTask)) %>%
+      dplyr::arrange(dplyr::desc(ShortTask)) %>%
       dplyr::select(-ShortTask)
   }
   
@@ -221,9 +221,9 @@ generate_todolist <- function(df, start_enjoy = FALSE, start_short = TRUE, short
   
   if (show_intervals == TRUE){
     # I want to display only intervals and tasks
-    df <- df %>% select(Interval, Task)
+    df <- df %>% dplyr::select(Interval, Task)
   }else{
-    df <- df %>% select(Task)
+    df <- df %>% dplyr::select(Task)
   }
 
   return(df)

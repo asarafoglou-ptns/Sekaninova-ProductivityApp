@@ -126,7 +126,7 @@ ui <- fluidPage(
                         column(5,
                                h4("Overview of your tasks:", class = "title"),
                                DTOutput("taskTable"),
-                               downloadButton("downloadData", "Download CSV"),
+                               downloadButton("downloadData", "Download Task CSV"),
                                actionButton("delete_button", "Delete Selected Tasks"),
                                tags$div(style = "height: 20px;"),
                                plotOutput("eisenhowerPlot")
