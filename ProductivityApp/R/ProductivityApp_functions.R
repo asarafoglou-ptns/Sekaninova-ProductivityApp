@@ -83,7 +83,7 @@ generate_eisenhower_matrix <- function(df){
     dplyr::ungroup()
   
   ggplot2::ggplot(df, ggplot2::aes(x = Urgency, y = Importance, label = Task)) +
-    ggplot2::geom_point(color = "blue", size = 3, alpha = 0.5) +  # Points representing tasks
+    ggplot2::geom_point(color = "blue", size = 3, alpha = 0.2) +  # Points representing tasks
     ggplot2::geom_text(ggplot2::aes(y = Importance + y_offset), size = 5, hjust = 0.5, vjust = 1.5) +  # Labels for tasks
     ggplot2::xlim(0.5, 4.5) + ggplot2::ylim(0.5, 4.5) +  # Set limits for x and y axes
     ggplot2::labs(title = "Eisenhower Matrix", x = "Urgency", y = "Importance") +

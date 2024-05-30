@@ -204,7 +204,7 @@ server <- function(input, output, session) {
   
   # Task table
   output$taskTable <- renderDT({
-    datatable(tasks(), options = list(pageLength = 5, lengthMenu = list(c(5, 10), c('5', '10')))) # Task editing: editable = TRUE
+    datatable(tasks(), rownames = FALSE, options = list(pageLength = 5, lengthMenu = list(c(5, 10), c('5', '10')))) # Task editing: editable = TRUE
   })
   
   # Uploading task csv
@@ -251,7 +251,14 @@ server <- function(input, output, session) {
                                ordering = FALSE))
     })
     ordered_tasks <- order_task_df(tasks(), start_enjoy = input$least_enjoyable, start_short = input$short_tasks)
-    output$task_message <- renderText(tasks_given_availability(ordered_tasks, start_time = input$start_time, end_time = input$end_time)$message)
+    avail_info <- tasks_given_availability(ordered_tasks, start_time = input$start_time, end_time = input$end_time)
+    
+    # Update task_message properly, extra lines of code necessary because the 
+    # to-do list was not correctly updating when going from all tasks scheduled
+    # to some tasks not scheduled
+    output$task_message <- renderText({
+      avail_info$message
+    })
   })
   
   ## POMODORO TAB --------------------------------------------------------------
