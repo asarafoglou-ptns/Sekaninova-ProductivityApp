@@ -126,7 +126,7 @@ ui <- fluidPage(
                                h4("To-Do list preferences:", class = "title"),
                                timeInput("start_time", "Enter start time:", value = "09:00"),
                                timeInput("end_time", "Enter end time:", value = "17:00"),
-                               checkboxInput("short_tasks", "Start with tasks that take less than 5 mins", value = TRUE),
+                               checkboxInput("short_tasks", "Start with tasks that take 5 mins or less", value = TRUE),
                                checkboxInput("least_enjoyable", "Start with the least enjoyable tasks", value = TRUE),
                                actionButton("generate_list", "Get the To-Do List"),
                                tags$div(style = "height: 20px;"), # br(),

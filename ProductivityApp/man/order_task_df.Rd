@@ -13,7 +13,7 @@ order_task_df(df, start_enjoy = FALSE, start_short = TRUE, short_time = 5)
 
 \item{start_short}{logical, whether user wants to start with short tasks (e.g. tasks that take less than 5 mins) regardless of their urgency, importance, and enjoyability.}
 
-\item{short_time}{numeric, what task duration user considers to be short, this parameter is relevant if start_short is TRUE, default value is 5 minutes.}
+\item{short_time}{numeric, what task duration the user considers to be short, this parameter is relevant if start_short is TRUE, default value is 5 minutes.}
 }
 \value{
 the ordered task data frame with the following columns:

@@ -23,17 +23,15 @@ generate_todolist(
 
 \item{short_time}{numeric, what task duration user considers to be short, this parameter is relevant if start_short is TRUE, default value is 5 minutes.}
 
-\item{start_time}{character in a format "H:M", represents the time when the user wants to start working on their tasks.}
+\item{start_time}{character in a format "\%H:\%M", represents the time when the user wants to start working on their tasks.}
 
 \item{show_intervals}{logical, whether user wants to have time intervals next to every task}
-
-\item{available_time}{numeric, how much available time the user has (in minutes).}
 }
 \value{
 the to-do list data frame with time intervals and tasks
 }
 \description{
-Generates a to-do list based on a given task data frame. It uses the order_task_df function to first order the tasks based on urgency, importance and user preferences. Next, it assigns time intervals to each task and returns a data frame containing a to-do list with intervals and tasks.
+Generates a to-do list based on a given task data frame. It uses the order_task_df function to first order the tasks based on urgency, importance and user preferences. Next, it uses the tasks_given_availability function to get a data frame with tasks that can be scheduled based on the available time. Finally, it assigns time intervals to each task and returns a data frame containing a to-do list with intervals and tasks.
 }
 \examples{
 # Generate a to-do list based on this example task data frame

@@ -13,7 +13,7 @@ productivity_report(df)
 The productivity plot report with an overview of user's productivity.
 }
 \description{
-Generates a productivity report with an overview of how long the user was productive and whether they tend to underestimate or overestimate the time it takes them to complete a task.
+Generates a productivity report with an overview of how long the user was productive, whether they tend to underestimate or overestimate the time it takes them to complete a task, and which task or tasks they estimated the best.
 }
 \examples{
 # Generate a productivity plot based on an example data frame

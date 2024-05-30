@@ -15,13 +15,13 @@ tasks_given_availability(df, start_time, end_time)
 }
 \value{
 df and message:
-#' \itemize{
+\itemize{
 \item \strong{Data Frame}: a data frame with tasks that can be scheduled based on user's availability.
-\item \strong{Message}: a message about whether some tasks couldn't be scheduled - either saying "All tasks were successfully scheduled!" or "The following tasks were not scheduled because there was not enough time available:" followed by the names of tasks that could not be scheduled.
+\item \strong{Message}: a message about whether some tasks couldn't be scheduled - either saying "All tasks were successfully scheduled!" or "The following tasks were not scheduled because there was not enough time available:" followed by the names of tasks that could not be scheduled. Furthermore, if user's time availability isn't logical/feasible, the generated message encourages the user to revise their time availability.
 }
 }
 \description{
-Generates a data frame and a message about unscheduled tasks for a to-do list based on user's time availability.
+Generates a data frame and a message about unscheduled tasks for a to-do list based on user's time availability. It also checks whether the user's time availability is feasible (e.g. if user puts in availability from 9:00 to 9:00, it generates a message that the user should revise their input).
 }
 \examples{
 # Generate a data frame and a message about unscheduled tasks

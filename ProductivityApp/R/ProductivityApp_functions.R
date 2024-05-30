@@ -103,7 +103,7 @@ generate_eisenhower_matrix <- function(df){
 #' @param df name of the task data frame
 #' @param start_enjoy logical, whether user prefers to start with most or least enjoyable tasks that have equal urgency and importance.
 #' @param start_short logical, whether user wants to start with short tasks (e.g. tasks that take less than 5 mins) regardless of their urgency, importance, and enjoyability.
-#' @param short_time numeric, what task duration user considers to be short, this parameter is relevant if start_short is TRUE, default value is 5 minutes.
+#' @param short_time numeric, what task duration the user considers to be short, this parameter is relevant if start_short is TRUE, default value is 5 minutes.
 #' @return the ordered task data frame with the following columns:
 #' \itemize{
 #' \item \strong{Task}: the names of individual tasks
@@ -135,14 +135,14 @@ order_task_df <- function(df, start_enjoy = FALSE, start_short = TRUE, short_tim
 }
 
 #' @title Check Tasks Given Availability
-#' @description Generates a data frame and a message about unscheduled tasks for a to-do list based on user's time availability.   
+#' @description Generates a data frame and a message about unscheduled tasks for a to-do list based on user's time availability. It also checks whether the user's time availability is feasible (e.g. if user puts in availability from 9:00 to 9:00, it generates a message that the user should revise their input).    
 #' @param df name of the ordered task data frame  
 #' @param start_time start time in a format "%H:%M", when user wants to start working on their to-do list
 #' @param end_time end time in a format "%H:%M", until when user wants to work on their to-do list
 #' @return df and message:
-#' #' \itemize{
+#' \itemize{
 #' \item \strong{Data Frame}: a data frame with tasks that can be scheduled based on user's availability.
-#' \item \strong{Message}: a message about whether some tasks couldn't be scheduled - either saying "All tasks were successfully scheduled!" or "The following tasks were not scheduled because there was not enough time available:" followed by the names of tasks that could not be scheduled.
+#' \item \strong{Message}: a message about whether some tasks couldn't be scheduled - either saying "All tasks were successfully scheduled!" or "The following tasks were not scheduled because there was not enough time available:" followed by the names of tasks that could not be scheduled. Furthermore, if user's time availability isn't logical/feasible, the generated message encourages the user to revise their time availability.
 #' }
 #' @examples
 #' # Generate a data frame and a message about unscheduled tasks
@@ -157,7 +157,6 @@ tasks_given_availability <- function(df, start_time, end_time){
   
   if (time_available == 0){
     message <- "The start and end time are the same, please revise it! The generated to-do list might not be optimal because it assumes that you have enough time available for all tasks from the start time that you put in." 
-    # return(list(df = df, message = message))
   } else if (time_available < 0) {
     message <- "The end time is smaller than the start time, please revise it! The generated to-do list might not be optimal because it assumes that you have enough time available for all tasks from the start time that you put in." 
   } else if (df$Duration[1] > time_available) {
@@ -183,13 +182,12 @@ tasks_given_availability <- function(df, start_time, end_time){
   }
 
 #' @title Generate a To-Do List
-#' @description Generates a to-do list based on a given task data frame. It uses the order_task_df function to first order the tasks based on urgency, importance and user preferences. Next, it assigns time intervals to each task and returns a data frame containing a to-do list with intervals and tasks.
+#' @description Generates a to-do list based on a given task data frame. It uses the order_task_df function to first order the tasks based on urgency, importance and user preferences. Next, it uses the tasks_given_availability function to get a data frame with tasks that can be scheduled based on the available time. Finally, it assigns time intervals to each task and returns a data frame containing a to-do list with intervals and tasks.
 #' @param df name of the task data frame
 #' @param start_enjoy logical, whether user prefers to start with most or least enjoyable tasks that have equal urgency and importance.
 #' @param start_short logical, whether user wants to start with short tasks (e.g. tasks that take less than 5 mins) regardless of their urgency, importance, and enjoyability.
 #' @param short_time numeric, what task duration user considers to be short, this parameter is relevant if start_short is TRUE, default value is 5 minutes.
-#' @param start_time character in a format "H:M", represents the time when the user wants to start working on their tasks.
-#' @param available_time numeric, how much available time the user has (in minutes).
+#' @param start_time character in a format "%H:%M", represents the time when the user wants to start working on their tasks.
 #' @param show_intervals logical, whether user wants to have time intervals next to every task
 #' @return the to-do list data frame with time intervals and tasks
 #' @examples
@@ -265,7 +263,7 @@ get_productivity_plot <- function(df){
 }
 
 #' @title Generate a Productivity Report
-#' @description Generates a productivity report with an overview of how long the user was productive and whether they tend to underestimate or overestimate the time it takes them to complete a task.
+#' @description Generates a productivity report with an overview of how long the user was productive, whether they tend to underestimate or overestimate the time it takes them to complete a task, and which task or tasks they estimated the best.
 #' @param df name of the data frame with tasks and estimated and actual duration of each task
 #' @return The productivity plot report with an overview of user's productivity.
 #' @examples
@@ -281,6 +279,32 @@ productivity_report <- function(df){
                                      "Overestimated")),
            Estimation_dif = Estimated_duration - Actual_duration) 
   
+  estimation_counts <- df %>%
+    dplyr::count(Estimation)
+  
+  # Determine the most frequent estimation type
+  max_count <- max(estimation_counts$n)
+  most_frequent <- estimation_counts %>%
+    dplyr::filter(n == max_count)
+  
+  # Determine estimate_type
+  if(nrow(most_frequent) > 1) {
+    estimate_type <- "Neither"
+  } else {
+    estimate_type <- most_frequent$Estimation
+  }
+  
+  # Estimation message
+  if (estimate_type == "Neither") {
+    est_message <- "Based on your productivity results, we cannot say whether you tend to underestimate or overestimate the time needed to complete a task."
+  } else if (estimate_type == "Underestimated") {
+    est_message <- "In general, you tend to underestimate the amount of time that you need to complete a task."
+  } else if (estimate_type == "Overestimated") {
+    est_message <- "In general, you tend to overestimate the amount of time that you need to complete a task."
+  } else {
+    est_message <- "You are very good at estimating the amount of time that you need to complete a task."
+  }
+  
   productive_time <- round(sum(df$Actual_duration))
   productive_hours <- productive_time %/% 60
   productive_mins <- productive_time %% 60
@@ -289,7 +313,8 @@ productivity_report <- function(df){
   best_est_task <- df$Task[df$Estimation_dif == best_est | df$Estimation_dif == -best_est]
   
   report <- paste("In total, you've spent", productive_hours, "hours and", 
-                  productive_mins, "minutes on your tasks. You were able to best estimate the duration of the task:", best_est_task)
+                  productive_mins, "minutes on your tasks.", est_message, 
+                  "You were able to best estimate the duration of the task:", best_est_task)
   return(report)
 }
 
