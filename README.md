@@ -13,4 +13,4 @@ If you have all necessary packages installed, you can run the app directly from 
 devtools::source_url("https://raw.githubusercontent.com/asarafoglou-ptns/Sekaninova-ProductivityApp/main/app.R")
 shiny::shinyApp(ui, server)
 
-Please read the README.pdf file that goes into more detail on how to use the app. 
+Please read the README.pdf file that goes into more detail on how to use the Productivity app. 
