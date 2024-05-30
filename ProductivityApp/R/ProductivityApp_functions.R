@@ -155,9 +155,16 @@ tasks_given_availability <- function(df, start_time, end_time){
   end_time <- as.POSIXct(end_time, format="%H:%M", tz = "UTC")
   time_available <- as.numeric(difftime(end_time, start_time, units = "mins"))
   
-  if (sum(df$Duration) <= time_available){
+  if (time_available == 0){
+    message <- "The start and end time are the same, please revise it! The generated to-do list might not be optimal because it assumes that you have enough time available for all tasks from the start time that you put in." 
+    # return(list(df = df, message = message))
+  } else if (time_available < 0) {
+    message <- "The end time is smaller than the start time, please revise it! The generated to-do list might not be optimal because it assumes that you have enough time available for all tasks from the start time that you put in." 
+  } else if (df$Duration[1] > time_available) {
+    message <- "There is a problem with your available time. It looks like you don't have enough time for the task that should be prioritized as first given the Eisenhower matrix and your preferences. Please revise the available time, task duration or your preferences so that the generated to-do list is optimal for you. Right now, the generated to-do list assumes that you have enough time available for all tasks from the start time that you put in which is probably not the case."
+  } else if (sum(df$Duration) <= time_available){
     message <- "All tasks were successfully scheduled!"
-  }else{
+  } else {
     task_fit <- FALSE
     unscheduled_tasks <- c()
     while(task_fit == FALSE){
@@ -171,6 +178,7 @@ tasks_given_availability <- function(df, start_time, end_time){
     message <- paste("The following tasks were not scheduled because there was not enough time available:",
                      unscheduled_tasks_string)
   }
+  
   return(list(df = df, message = message))
   }
 
