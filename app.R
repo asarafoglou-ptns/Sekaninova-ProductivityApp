@@ -136,7 +136,7 @@ ui <- fluidPage(
                                timeInput("start_time", "Enter start time:", value = "09:00"),
                                timeInput("end_time", "Enter end time:", value = "17:00"),
                                checkboxInput("short_tasks", "Start with tasks that take 5 mins or less", value = TRUE),
-                               checkboxInput("least_enjoyable", "Start with the least enjoyable tasks", value = TRUE),
+                               checkboxInput("most_enjoyable", "Start with the most enjoyable tasks", value = TRUE),
                                actionButton("generate_list", "Get the To-Do List"),
                                tags$div(style = "height: 20px;"), # br(),
                                h4("Your To-Do List:", class = "title"),
@@ -248,7 +248,7 @@ server <- function(input, output, session) {
   
   # To-Do List
   observeEvent(input$generate_list, {
-    tdl <- generate_todolist(tasks(), start_enjoy = input$least_enjoyable, start_short = input$short_tasks, start_time = input$start_time, end_time = input$end_time)
+    tdl <- generate_todolist(tasks(), start_enjoy = input$most_enjoyable, start_short = input$short_tasks, start_time = input$start_time, end_time = input$end_time)
     output$todolist <- renderDT({
       datatable(tdl, 
                 selection = "none", 
@@ -259,7 +259,7 @@ server <- function(input, output, session) {
                                info = FALSE,
                                ordering = FALSE))
     })
-    ordered_tasks <- order_task_df(tasks(), start_enjoy = input$least_enjoyable, start_short = input$short_tasks)
+    ordered_tasks <- order_task_df(tasks(), start_enjoy = input$most_enjoyable, start_short = input$short_tasks)
     avail_info <- tasks_given_availability(ordered_tasks, start_time = input$start_time, end_time = input$end_time)
     
     # Update task_message properly, extra lines of code necessary because the 
@@ -286,7 +286,7 @@ server <- function(input, output, session) {
   # POMODORO TO-DO LIST
   # Pomodoro to-do list generated when the user presses the 'Get the To-Do List' button on the To-Do List tab
   observeEvent(input$generate_list, {
-    pomodoro_tdl <- generate_todolist(tasks(), start_enjoy = input$least_enjoyable, start_short = input$short_tasks, start_time = input$start_time, end_time = input$end_time, show_intervals = FALSE)
+    pomodoro_tdl <- generate_todolist(tasks(), start_enjoy = input$most_enjoyable, start_short = input$short_tasks, start_time = input$start_time, end_time = input$end_time, show_intervals = FALSE)
     pomodoro_tdl$`Time spent on task` <- NA
     pomodoro_todolist(pomodoro_tdl)
     output$pomodoro_todolist <- renderDT({
@@ -414,7 +414,7 @@ server <- function(input, output, session) {
   
   # Get the data frame for the productivity report
   observeEvent(input$generate_list, {
-    ordered_tdl <- order_task_df(tasks(), start_enjoy = input$least_enjoyable, start_short = input$short_tasks)
+    ordered_tdl <- order_task_df(tasks(), start_enjoy = input$most_enjoyable, start_short = input$short_tasks)
     updated_ordered_tdl <- tasks_given_availability(ordered_tdl, input$start_time, input$end_time)$df
     updated_ordered_tdl <- updated_ordered_tdl %>%
       select(Task, Duration) %>%
